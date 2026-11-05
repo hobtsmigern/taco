@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Which taco are you?</title>
+<meta name="description" content="A tiny, cute personality quiz: answer 9 questions and find out which of 12 tacos you are.">
+<meta property="og:title" content="Which taco are you?">
+<meta property="og:description" content="9 questions, 12 tacos, one delicious truth about your personality.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌮</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FF8FB8;
+    --dot: rgba(255, 255, 255, 0.35);
+    --card: #FFFBF4;
+    --ink: #2E1A47;
+    --ink-soft: #5B4875;
+    --line: #2E1A47;
+    --masa: #FFC93C;
+    --avocado: #5DBB63;
+    --salsa: #FF4E3B;
+    --track: #F3E6F7;
+    --hover: #FFF1C2;
+    --tint-1: #FFEBB0;
+    --tint-2: #D9F2CC;
+    --focus: #2E1A47;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #2A1640;
+      --dot: rgba(255, 143, 184, 0.14);
+      --card: #3A2356;
+      --ink: #FFEAF4;
+      --ink-soft: #D9C3E8;
+      --line: #120820;
+      --track: #2A1640;
+      --hover: #4A2E6B;
+      --tint-1: #5A3E2A;
+      --tint-2: #284A30;
+      --focus: #FFC93C;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(var(--dot) 2px, transparent 2.5px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, .display {
+    font-family: "Bagel Fat One", "Cooper Black", ui-rounded, system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  h1 { font-size: clamp(2.3rem, 8vw, 3.3rem); line-height: 1.02; }
+  h2 { font-size: clamp(1.5rem, 5vw, 1.9rem); line-height: 1.15; }
+  p { margin: 0; }
+  :focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  [tabindex="-1"]:focus { outline: none; }
+
+  /* Papel picado banner */
+  .banner { display: block; height: 96px; overflow: hidden; padding-top: env(safe-area-inset-top, 0px); }
+  .banner svg { width: 100%; height: 96px; display: block; }
+
+  .wrap { max-width: 600px; margin: 0 auto; padding: 10px 16px 32px; }
+  .card {
+    background: var(--card);
+    border: 3px solid var(--line);
+    border-radius: 32px;
+    box-shadow: 0 8px 0 var(--line);
+    padding: 28px 22px 32px;
+    text-align: center;
+  }
+
+  /* Buttons */
+  .btn {
+    font: inherit;
+    font-weight: 800;
+    font-size: 1.1rem;
+    padding: 13px 28px;
+    border-radius: 999px;
+    border: 3px solid var(--line);
+    background: var(--masa);
+    color: #2E1A47;
+    box-shadow: 0 5px 0 var(--line);
+    cursor: pointer;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--line); }
+  .btn.secondary { background: var(--card); color: var(--ink); }
+  .btn.quiet {
+    background: none; border: none; box-shadow: none; color: var(--ink);
+    text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px;
+    padding: 10px 14px;
+  }
+  .btn.quiet:active { transform: none; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 26px; }
+
+  /* Start */
+  .mascot {
+    display: block; margin: 0 auto; padding: 0; border: none; background: none; cursor: pointer;
+    width: min(300px, 82%);
+  }
+  .mascot svg { width: 100%; height: auto; display: block; }
+  .mascot-caption { font-size: 0.95rem; color: var(--ink-soft); margin: 4px 0 18px; min-height: 1.5em; }
+  .lede { max-width: 30ch; margin: 14px auto 0; font-size: 1.15rem; }
+
+  /* Question */
+  .q-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .q-top .btn.quiet { padding: 6px 4px; font-size: 1rem; }
+  .q-count { font-weight: 800; color: var(--ink-soft); font-size: 0.95rem; }
+  .dots { display: flex; gap: 6px; justify-content: center; margin: 4px 0 22px; }
+  .dot { width: 24px; height: 10px; border-radius: 99px; background: var(--track); border: 2px solid var(--line); }
+  .dot.done { background: var(--masa); }
+  .dot.now { background: var(--salsa); }
+  .question h2 { margin: 0 auto 22px; max-width: 22ch; }
+  .answers { display: grid; gap: 12px; }
+  .answer {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    text-align: left; font: inherit; font-weight: 700; font-size: 1.05rem; line-height: 1.3;
+    color: var(--ink); background: var(--card);
+    border: 3px solid var(--line); border-radius: 20px;
+    padding: 13px 16px; box-shadow: 0 4px 0 var(--line);
+    cursor: pointer; transition: transform 0.1s, box-shadow 0.1s, background-color 0.1s;
+  }
+  .answer:hover { background: var(--hover); }
+  .answer.was { background: var(--hover); }
+  .answer.picked { background: var(--avocado); color: #1E2A12; transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .answer .emo { font-size: 1.6rem; width: 2.2rem; flex: none; text-align: center; }
+
+  /* Result */
+  .kicker { font-weight: 800; font-size: 1.15rem; color: var(--ink-soft); }
+  .result-taco { width: min(320px, 84%); margin: 4px auto 0; }
+  .result-taco svg { width: 100%; height: auto; display: block; }
+  .tagline { font-weight: 800; font-size: 1.2rem; margin-top: 6px; }
+  .desc { max-width: 46ch; margin: 16px auto 0; text-align: left; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; text-align: left; }
+  .fact { border-radius: 20px; padding: 14px 16px; border: 3px solid var(--line); }
+  .fact h3 { margin: 0 0 4px; font-size: 0.95rem; font-weight: 800; }
+  .fact p { font-size: 1rem; line-height: 1.4; }
+  .fact.power { background: var(--tint-1); }
+  .fact.buddy { background: var(--tint-2); }
+  .buddy-link {
+    display: flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 800;
+    text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px;
+  }
+  .buddy-link svg { width: 54px; height: auto; flex: none; }
+  .traits { margin-top: 26px; text-align: left; }
+  .traits h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; }
+  .trait { margin-top: 14px; }
+  .ends { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--ink-soft); font-weight: 700; margin-bottom: 4px; }
+  .ends b { color: var(--ink); }
+  .track { height: 14px; border-radius: 99px; background: var(--track); border: 2px solid var(--line); position: relative; margin: 0 13px; }
+  .marker {
+    position: absolute; top: 50%; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--masa); border: 3px solid var(--line); transform: translate(-50%, -50%);
+    display: grid; place-items: center; font-size: 14px; line-height: 1;
+  }
+  .runner { margin-top: 18px; color: var(--ink-soft); font-size: 1rem; }
+  .runner a { color: var(--ink); font-weight: 800; }
+  .toast { min-height: 1.5em; margin-top: 12px; font-weight: 800; }
+
+  /* Gallery */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 22px; }
+  .tile {
+    font: inherit; color: var(--ink); background: var(--card); cursor: pointer;
+    border: 3px solid var(--line); border-radius: 22px; box-shadow: 0 4px 0 var(--line);
+    padding: 10px 10px 14px; text-align: center; transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .tile:hover { background: var(--hover); }
+  .tile:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .tile svg { width: 100%; height: auto; display: block; }
+  .tile .display { font-size: 1.15rem; line-height: 1.1; display: block; margin-top: 2px; }
+  .tile small { display: block; color: var(--ink-soft); font-weight: 700; font-size: 0.85rem; margin-top: 2px; }
+
+  footer { text-align: center; font-size: 0.9rem; padding: 18px 16px 28px; font-weight: 700; color: var(--ink); }
+
+  /* Taco motion */
+  .taco .eye { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+  @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+  .pop { animation: pop 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-36px) scale(0.6) rotate(-8deg); } to { opacity: 1; transform: none; } }
+  .wiggle { animation: wiggle 0.45s ease-out; }
+  @keyframes wiggle { 0% { transform: rotate(0); } 30% { transform: rotate(-6deg); } 60% { transform: rotate(5deg); } 100% { transform: rotate(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 460px) {
+    .card { padding: 22px 16px 26px; border-radius: 26px; }
+    .facts { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="banner" id="banner" aria-hidden="true"></div>
+<main class="wrap" id="app"></main>
+<footer>Made with salsa and a little bit of science. Not actually science.</footer>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA
+   Each taco has a flavor profile on 4 axes, from -1 to 1:
+   [spice (mild → spicy), energy (chill → hype),
+    social (homebody → party), adventure (classic → experimental)]
+   Each answer nudges the player along those axes; the closest taco wins.
+---------------------------------------------------------------- */
+const AXES = [
+  { name: "Spice",     low: "Mild",     high: "Spicy" },
+  { name: "Energy",    low: "Chill",    high: "Hype" },
+  { name: "Social",    low: "Homebody", high: "Party" },
+  { name: "Adventure", low: "Classic",  high: "Experimental" }
+];
+
+const TACOS = {
+  "al-pastor": {
+    name: "Al Pastor", article: "an", tagline: "The main character",
+    vec: [0.4, 0.9, 0.9, 0.2],
+    desc: "Spun on a trompo and crowned with pineapple, you were literally born for the spotlight. When you walk in, the energy goes up a notch, and people follow you to the next spot without asking where it is.",
+    power: "Turning any Tuesday into an event", buddy: "baja-fish",
+    art: { shell: "corn", filling: "#E0602F", filling2: "#C94E22", face: "grin",
+           toppings: [["pineapple", 5], ["onion", 6], ["cilantro", 7]] }
+  },
+  "carnitas": {
+    name: "Carnitas", article: "a", tagline: "The comfort friend",
+    vec: [-0.3, -0.5, -0.3, -0.8],
+    desc: "Slow-cooked, golden at the edges, soft in the middle. You’re the friend who remembers birthdays and shows up with soup. Nothing flashy, everything right.",
+    power: "Making anyone feel at home", buddy: "al-pastor",
+    art: { shell: "corn", filling: "#C98B4E", filling2: "#B07436", face: "happy", lime: true,
+           toppings: [["onion", 6], ["cilantro", 7]] }
+  },
+  "baja-fish": {
+    name: "Baja Fish", article: "a", tagline: "The beach breeze",
+    vec: [-0.5, -0.9, 0.4, 0.2],
+    desc: "Light, crispy, with a squeeze of lime. You don’t do stress; stress takes one look at you and leaves. People feel calmer around you without knowing why.",
+    power: "Unbothered vibes, even in traffic", buddy: "chorizo",
+    art: { shell: "flour", filling: "#F2C27B", filling2: "#E3AC5C", face: "sleepy", lime: true,
+           toppings: [["cabbage", 8], ["purple", 5]], waves: ["crema"] }
+  },
+  "birria": {
+    name: "Birria", article: "a", tagline: "The deep thinker",
+    vec: [0.5, 0.2, -0.6, 0.3],
+    desc: "Rich, layered, and best enjoyed slowly with a cup of consommé on the side. You feel things intensely and think in long chapters. Not everyone gets you right away, but the ones who do never leave.",
+    power: "Conversations that last until 3 a.m.", buddy: "carnitas",
+    art: { shell: "red", filling: "#8E2B1E", filling2: "#A33A26", face: "dreamy",
+           toppings: [["cheese", 5], ["onion", 5], ["cilantro", 6]] }
+  },
+  "carne-asada": {
+    name: "Carne Asada", article: "a", tagline: "The backyard legend",
+    vec: [0.2, 0.3, 0.6, -0.9],
+    desc: "Fire, tongs, a cold drink: you’re running the grill and everybody knows it. Dependable, warm, and just a tiny bit bossy about how things should be cooked.",
+    power: "Feeding a crowd without breaking a sweat", buddy: "crunchy",
+    art: { shell: "corn", filling: "#6B3A26", filling2: "#7E4630", face: "happy",
+           toppings: [["avocado", 4], ["onion", 5], ["cilantro", 5]] }
+  },
+  "breakfast": {
+    name: "Breakfast", article: "a", tagline: "The early bird",
+    vec: [-0.8, 0.7, 0.1, -0.2],
+    desc: "Egg, potato, a little cheese, eaten before most people are awake. You’re sunshine wrapped in a tortilla, and your to-do list is already half done.",
+    power: "Optimism before 8 a.m.", buddy: "barbacoa",
+    art: { shell: "flour", filling: "#FFE27A", filling2: "#F3CF8E", face: "wink",
+           toppings: [["potato", 5], ["cheese", 6], ["scallion", 4]] }
+  },
+  "crunchy": {
+    name: "Crunchy Classic", article: "a", tagline: "The nostalgic goofball",
+    vec: [-0.5, 0.7, 0.8, -0.6],
+    desc: "Hard shell, shredded lettuce, cheese everywhere. You’re unapologetically fun, a little messy, and impossible to stay mad at. Every group needs one of you.",
+    power: "Laughing until something breaks (usually the shell)", buddy: "carne-asada",
+    art: { shell: "hard", filling: "#8A4B2A", filling2: "#7A3F22", face: "grin",
+           toppings: [["cheese", 9], ["tomato", 5]], under: ["lettuce"] }
+  },
+  "nopales": {
+    name: "Nopales", article: "a", tagline: "The gentle gardener",
+    vec: [-0.2, -0.7, -0.7, 0.5],
+    desc: "Grilled cactus, fresh tomato, crumbly queso fresco. You’re grounded, thoughtful, and quietly resilient (you are a cactus, after all). You’d rather water your plants than go clubbing, and that’s a power move.",
+    power: "Staying calm in any storm", buddy: "korean-bbq",
+    art: { shell: "blue", filling: "#4F9A3C", filling2: "#3F8530", face: "happy",
+           toppings: [["tomato", 5], ["queso", 6], ["onion", 3]] }
+  },
+  "korean-bbq": {
+    name: "Korean BBQ", article: "a", tagline: "The explorer",
+    vec: [0.4, 0.4, 0.2, 1.0],
+    desc: "Bulgogi, kimchi, sesame and a tortilla: two worlds, one perfect bite. You’re curious about everything, you’ve already booked the next trip, and rules are more like suggestions.",
+    power: "Finding the best spot nobody’s heard of", buddy: "nopales",
+    art: { shell: "flour", filling: "#7A3B26", filling2: "#8C4A2E", face: "wink",
+           toppings: [["kimchi", 6], ["scallion", 4], ["sesame", 12]] }
+  },
+  "chorizo": {
+    name: "Chorizo", article: "a", tagline: "The chaos gremlin",
+    vec: [1.0, 0.9, 0.4, 0.4],
+    desc: "Spicy, smoky, and gets on absolutely everything. You have no inside voice and no regrets. Life with you is never boring, and occasionally slightly on fire.",
+    power: "Saying yes first, thinking later", buddy: "baja-fish",
+    art: { shell: "corn", filling: "#B8321F", filling2: "#A02817", face: "grin",
+           toppings: [["jalapeno", 4], ["onion", 4], ["cilantro", 5]] }
+  },
+  "barbacoa": {
+    name: "Barbacoa", article: "a", tagline: "The old soul",
+    vec: [0.0, -0.8, -0.8, -0.7],
+    desc: "Slow-cooked for hours, the way it’s been done for generations. You love traditions, long stories, and things worth waiting for. People come to you for advice and leave with a full plate.",
+    power: "Patience, and excellent advice", buddy: "breakfast",
+    art: { shell: "corn", filling: "#5C3020", filling2: "#6E3B27", face: "sleepy", lime: true,
+           toppings: [["onion", 6], ["cilantro", 7]] }
+  },
+  "ice-cream": {
+    name: "Ice Cream", article: "an", tagline: "The daydreamer",
+    vec: [-0.9, -0.2, -0.4, 0.9],
+    desc: "A waffle shell, vanilla ice cream, chocolate, and absolutely no respect for the rules of tacos. You’re soft-hearted, imaginative, and a little bit of a mystery.",
+    power: "Making the ordinary feel magical", buddy: "birria",
+    art: { shell: "waffle", filling: "#FFF4E2", filling2: "#FFE3EE", face: "dreamy", blob: [18, 23],
+           toppings: [["sprinkle", 14]], waves: ["choco"] }
+  }
+};
+const ORDER = Object.keys(TACOS);
+
+// Balance offsets (found by simulating thousands of random players) so every
+// taco comes up about equally often. Re-tune these if you change the questions.
+const BALANCE = {"al-pastor":0.14,"carnitas":0.09,"baja-fish":-0.31,"birria":0.39,"carne-asada":0.34,
+  "breakfast":-0.21,"crunchy":-0.18,"nopales":-0.11,"korean-bbq":0.21,"chorizo":0.19,"barbacoa":-0.07,"ice-cream":-0.47};
+
+const QUESTIONS = [
+  { q: "It’s Saturday morning. You’re…", a: [
+    ["☀️", "At the farmers market with a coffee", [-0.5, 1, 0.5, 0]],
+    ["🛌", "In blanket burrito mode until noon", [0, -1, -1, 0]],
+    ["🎉", "Recovering from last night’s adventure", [1, 1, 1, 0]],
+    ["🧶", "Starting a new hobby I found at 1 a.m.", [0, 0.5, -0.5, 1]] ] },
+  { q: "Pick your hot sauce.", a: [
+    ["🌿", "A whisper of salsa verde", [-1, 0, 0, 0]],
+    ["🍅", "A good, honest medium", [0, 0, 0, -1]],
+    ["🔥", "Habanero. Bring tissues.", [1, 0.5, 0, 0]],
+    ["🥭", "Something fruity I made myself", [0.5, 0, 0, 1]] ] },
+  { q: "At a party, you’re usually…", a: [
+    ["💃", "Starting the dance floor", [0, 1, 1, 0]],
+    ["🗨️", "In the kitchen, deep in one conversation", [0.5, -0.5, -0.5, 0]],
+    ["🍖", "At the grill, making sure everyone eats", [0, 0.5, 0.5, -1]],
+    ["🐶", "Befriending the host’s dog", [-0.5, -1, -1, 0]] ] },
+  { q: "Choose a vacation.", a: [
+    ["🏝️", "Hammock, beach, zero plans", [-0.5, -1, 0.5, 0]],
+    ["🎒", "Backpacking somewhere I’ve never been", [0.5, 0.5, 0, 1]],
+    ["🏡", "Grandma’s house, for the recipes", [0, -0.5, -0.5, -1]],
+    ["🌃", "A city that never sleeps", [0.5, 1, 1, 0]] ] },
+  { q: "Your friends would describe you as…", a: [
+    ["⚓", "Reliable, the anchor of the group", [0, -0.5, 0, -1]],
+    ["🌪️", "Unpredictable, in a fun way", [1, 0.5, 0, 0.5]],
+    ["🌞", "Pure sunshine", [-0.5, 1, 0.5, 0]],
+    ["🦉", "Calm and wise", [0, -1, -0.5, 0]] ] },
+  { q: "Pick a texture.", a: [
+    ["💥", "Crunchy", [0, 0.5, 0.5, -0.5]],
+    ["☁️", "Soft and melty", [-0.5, -1, 0, 0]],
+    ["🔥", "Crispy edges, juicy middle", [0.5, 0, 0, -0.5]],
+    ["✨", "Surprise me", [0, 0, 0, 1]] ] },
+  { q: "You get a surprise day off. You…", a: [
+    ["📱", "Text the group chat right away", [0, 0.5, 1, 0]],
+    ["🍲", "Cook something that takes all day", [0, -1, -0.5, -1]],
+    ["🛼", "Do something slightly reckless", [1, 1, 0, 0.5]],
+    ["📓", "Find a café and daydream in a notebook", [-0.5, -0.5, -1, 0.5]] ] },
+  { q: "Pick a soundtrack.", a: [
+    ["🎺", "Classics the whole family sings along to", [0, 0, 0.5, -1]],
+    ["🎧", "Lo-fi beats to nap to", [0, -1, -1, 0]],
+    ["🔊", "Reggaeton at full volume", [0.5, 1, 1, 0]],
+    ["🌀", "Something experimental I found at 2 a.m.", [0.5, 0, -0.5, 1]] ] },
+  { q: "Drama breaks out. You…", a: [
+    ["🍿", "Grab popcorn and add hot sauce", [1, 0, 0.5, 0]],
+    ["🤝", "Sit everyone down and mediate", [0, -0.5, 0, -0.5]],
+    ["🚪", "Quietly leave and go home", [0, -0.5, -1, 0]],
+    ["😂", "Turn it into a joke", [-0.5, 1, 0.5, 0]] ] }
+];
+
+/* ---------------------------------------------------------------
+   TACO ART (drawn as SVG from each taco's "art" recipe)
+---------------------------------------------------------------- */
+const SHELLS = {
+  corn:   { fill: "#F7C548", edge: "#D99A22", spot: "#E3A93A" },
+  flour:  { fill: "#FBE7C0", edge: "#D8AE6E", spot: "#DDA868" },
+  hard:   { fill: "#F4B63F", edge: "#C98516", ridge: "#DE9A24" },
+  blue:   { fill: "#8478C4", edge: "#5E52A0", spot: "#6C60B0" },
+  red:    { fill: "#D9553A", edge: "#A8361F", spot: "#B8432A" },
+  waffle: { fill: "#E9A75B", edge: "#B9742E", grid: "#C98A45" }
+};
+const SHELL_PATH = "M15,70 A85,62 0 0 0 185,70 Q100,76 15,70 Z";
+const SPOTS = [[40, 82], [52, 110], [150, 84], [150, 108], [95, 124], [170, 78], [118, 122]];
+const INK = "#2E1A47";
+let svgCount = 0;
+
+function hashStr(s) { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 2147483647; return h || 1; }
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const f = n => Math.round(n * 10) / 10;
+
+function wave(y, color, width, amp) {
+  let d = `M30,${y} q7,${-amp} 14,0`;
+  for (let x = 44; x < 170; x += 14) d += " t14,0";
+  return `<path d="${d}" stroke="${color}" stroke-width="${width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+function topping(type, R) {
+  const x = f(34 + R() * 132), y = f(45 + R() * 17), rot = Math.round(R() * 360);
+  const tr = `transform="rotate(${rot} ${x} ${y})"`;
+  switch (type) {
+    case "pineapple": return `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="3" fill="#FFD84D" stroke="#E5A422" stroke-width="1.5" ${tr}/>`;
+    case "onion":     return `<rect x="${x - 3}" y="${y - 3}" width="6" height="6" rx="1.5" fill="#FFFFFF" stroke="#E4DCCB" stroke-width="1" ${tr}/>`;
+    case "cilantro":  return `<ellipse cx="${x}" cy="${y}" rx="4.5" ry="2.6" fill="#3FA34D" ${tr}/>`;
+    case "cabbage":   return `<path d="M${x - 7},${y} q7,-6 14,0" stroke="#B7E27A" stroke-width="3.5" fill="none" stroke-linecap="round" ${tr}/>`;
+    case "purple":    return `<path d="M${x - 7},${y} q7,-6 14,0" stroke="#A66BE0" stroke-width="3.5" fill="none" stroke-linecap="round" ${tr}/>`;
+    case "cheese":    return `<path d="M${x - 6},${y} l12,0" stroke="#FFB627" stroke-width="3.5" stroke-linecap="round" ${tr}/>`;
+    case "tomato":    return `<circle cx="${x}" cy="${y}" r="4.5" fill="#F2545B" stroke="#C93A41" stroke-width="1"/>`;
+    case "kimchi":    return `<path d="M${x - 6},${y + 2} q6,-8 12,0" stroke="#F26B38" stroke-width="4" fill="none" stroke-linecap="round" ${tr}/>`;
+    case "sesame":    return `<ellipse cx="${x}" cy="${y}" rx="1.9" ry="1.1" fill="#FFF4D6" ${tr}/>`;
+    case "avocado":   return `<rect x="${x - 6}" y="${y - 4}" width="12" height="8" rx="4" fill="#B5DE7C" stroke="#6FA83A" stroke-width="1.5" ${tr}/>`;
+    case "queso":     return `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" rx="2" fill="#FFFDF5" stroke="#E2D9C4" stroke-width="1" ${tr}/>`;
+    case "potato":    return `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" rx="2" fill="#F2D39B" stroke="#D9B06B" stroke-width="1.2" ${tr}/>`;
+    case "scallion":  return `<circle cx="${x}" cy="${y}" r="3" fill="none" stroke="#6CC551" stroke-width="2"/>`;
+    case "jalapeno":  return `<circle cx="${x}" cy="${y}" r="4.8" fill="#7CC456" stroke="#2F7D32" stroke-width="2"/><circle cx="${x}" cy="${y}" r="1.4" fill="#E9F7C9"/>`;
+    case "sprinkle": {
+      const c = ["#FF4E3B", "#3EC1D3", "#FFC93C", "#9B5DE5", "#5DBB63", "#FF8FB8"][Math.floor(R() * 6)];
+      return `<path d="M${x - 3},${y} l6,0" stroke="${c}" stroke-width="2.6" stroke-linecap="round" ${tr}/>`;
+    }
+  }
+  return "";
+}
+
+function face(type) {
+  const eye = cx => `<g class="eye"><ellipse cx="${cx}" cy="95" rx="5.5" ry="7" fill="${INK}"/><circle cx="${cx + 1.8}" cy="92.5" r="2" fill="#fff"/></g>`;
+  const bigEye = cx => `<g class="eye"><ellipse cx="${cx}" cy="95" rx="6.8" ry="8.2" fill="${INK}"/><circle cx="${cx + 2.2}" cy="91.6" r="2.5" fill="#fff"/><circle cx="${cx - 2}" cy="98.5" r="1.2" fill="#fff"/></g>`;
+  const closed = cx => `<path d="M${cx - 6},94 q6,6 12,0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const smile = `<path d="M93,104 q7,7 14,0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const softSmile = `<path d="M95,105 q5,4 10,0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const grin = `<path d="M91,102 q9,13 18,0 z" fill="${INK}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><ellipse cx="100" cy="106.4" rx="4" ry="2" fill="#FF7FA8"/>`;
+  const blush = `<ellipse cx="65" cy="106" rx="7" ry="4" fill="#FF7FA8" opacity=".6"/><ellipse cx="135" cy="106" rx="7" ry="4" fill="#FF7FA8" opacity=".6"/>`;
+  const parts = {
+    happy:  eye(78) + eye(122) + smile,
+    grin:   eye(78) + eye(122) + grin,
+    wink:   eye(78) + closed(122) + smile,
+    sleepy: closed(78) + closed(122) + softSmile,
+    dreamy: bigEye(78) + bigEye(122) + smile
+  };
+  return blush + (parts[type] || parts.happy);
+}
+
+function tacoSVG(id, extraClass = "") {
+  const t = TACOS[id], a = t.art, S = SHELLS[a.shell], R = rng(hashStr(id));
+  const uid = "clip" + (++svgCount);
+  const [rMin, rMax] = a.blob || [13, 18];
+  let s = `<svg viewBox="0 0 200 140" class="taco ${extraClass}" role="img" aria-label="${t.name} taco with a happy face" xmlns="http://www.w3.org/2000/svg">`;
+  s += `<defs><clipPath id="${uid}"><path d="${SHELL_PATH}"/></clipPath></defs>`;
+  s += `<ellipse cx="100" cy="134" rx="64" ry="5" fill="rgba(46,26,71,.18)"/>`;
+  // fillings
+  let i = 0;
+  for (let x = 26; x <= 174; x += 14, i++) {
+    const r = f(rMin + R() * (rMax - rMin));
+    const col = a.filling2 && i % 3 === 1 ? a.filling2 : a.filling;
+    s += `<circle cx="${x}" cy="${f(69 - R() * 4)}" r="${r}" fill="${col}"/>`;
+  }
+  (a.under || []).forEach(w => { if (w === "lettuce") s += wave(55, "#7BD15A", 9, 6); });
+  (a.toppings || []).forEach(([type, n]) => { for (let k = 0; k < n; k++) s += topping(type, R); });
+  (a.waves || []).forEach(w => {
+    if (w === "crema") s += wave(52, "#FFFFFF", 4.5, 5);
+    if (w === "choco") s += wave(50, "#5A3220", 5, 6);
+  });
+  if (a.lime) s += `<path d="M150,58 A14,14 0 0 1 178,58 Z" fill="#9BD86B" stroke="#4E9A2E" stroke-width="2.5" stroke-linejoin="round"/><path d="M155,57 A9,9 0 0 1 173,57" fill="none" stroke="#D8F2B8" stroke-width="2.5"/>`;
+  // shell
+  s += `<path d="${SHELL_PATH}" fill="${S.fill}"/>`;
+  s += `<g clip-path="url(#${uid})">`;
+  if (S.spot) SPOTS.forEach(([x, y], k) => { s += `<ellipse cx="${x}" cy="${y}" rx="${k % 2 ? 3.5 : 4.5}" ry="2.6" fill="${S.spot}" opacity=".75"/>`; });
+  if (S.ridge) s += `<path d="M32,72 A68,48 0 0 0 168,72" fill="none" stroke="${S.ridge}" stroke-width="2.5"/><path d="M50,73 A50,34 0 0 0 150,73" fill="none" stroke="${S.ridge}" stroke-width="2" opacity=".6"/>`;
+  if (S.grid) for (let d = -140; d < 220; d += 16) {
+    s += `<path d="M${d},60 l90,90" stroke="${S.grid}" stroke-width="2.4"/><path d="M${d + 90},60 l-90,90" stroke="${S.grid}" stroke-width="2.4"/>`;
+  }
+  s += `</g>`;
+  s += `<path d="${SHELL_PATH}" fill="none" stroke="${S.edge}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  s += face(a.face);
+  return s + `</svg>`;
+}
+
+/* ---------------------------------------------------------------
+   PAPEL PICADO BANNER
+---------------------------------------------------------------- */
+function papelPicado() {
+  const colors = ["#FFC93C", "#5DBB63", "#3EC1D3", "#9B5DE5", "#FF4E3B", "#FFFFFF"];
+  const W = 1400;
+  const sag = x => 14 + 52 * (x / W) * (1 - x / W);
+  let s = `<svg viewBox="0 0 ${W} 96" preserveAspectRatio="xMidYMin slice" xmlns="http://www.w3.org/2000/svg">`;
+  s += `<path d="M0,14 Q${W / 2},40 ${W},14" stroke="#2E1A47" stroke-width="3" fill="none"/>`;
+  for (let i = 0, x = 12; x + 76 < W; i++, x += 98) {
+    const y0 = sag(x + 38) - 2, w = 76, h = 62, c = colors[i % colors.length];
+    let d = `M${x},${f(y0)} h${w} v${h}`;
+    for (let k = 0; k < 6; k++) d += ` l${-w / 12},8 l${-w / 12},-8`;
+    d += " Z";
+    const cx = x + w / 2, cy = y0 + 30, hole = c === "#FFFFFF" ? "#FF8FB8" : "rgba(255,255,255,.6)";
+    s += `<g><path d="${d}" fill="${c}" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round"/>`;
+    s += `<path d="M${cx},${f(cy - 13)} l10,13 l-10,13 l-10,-13 Z" fill="${hole}"/>`;
+    s += `<circle cx="${cx - 24}" cy="${f(cy - 14)}" r="4" fill="${hole}"/><circle cx="${cx + 24}" cy="${f(cy - 14)}" r="4" fill="${hole}"/>`;
+    s += `<circle cx="${cx - 24}" cy="${f(cy + 14)}" r="4" fill="${hole}"/><circle cx="${cx + 24}" cy="${f(cy + 14)}" r="4" fill="${hole}"/></g>`;
+  }
+  return s + "</svg>";
+}
+document.getElementById("banner").innerHTML = papelPicado();
+
+/* ---------------------------------------------------------------
+   QUIZ LOGIC + VIEWS
+---------------------------------------------------------------- */
+const app = document.getElementById("app");
+let view = "start", answers = [], qIndex = 0, lastResult = null, heroIndex = 0, firstRender = true, busy = false;
+
+function focusMain() {
+  if (firstRender) { firstRender = false; return; }
+  const el = app.querySelector("[data-focus]");
+  if (el) el.focus();
+  window.scrollTo({ top: 0 });
+}
+
+function clearHash() {
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+}
+
+function renderStart() {
+  view = "start";
+  app.innerHTML = `
+    <section class="card start">
+      <button class="mascot" id="mascot" aria-label="Show another taco">${tacoSVG(ORDER[heroIndex], "pop")}</button>
+      <p class="mascot-caption" id="caption" aria-live="polite">Psst, tap the taco.</p>
+      <h1 tabindex="-1" data-focus>Which taco are you?</h1>
+      <p class="lede">9 questions, 12 tacos, one delicious truth about your personality.</p>
+      <div class="actions">
+        <button class="btn" id="start">Start the quiz</button>
+        <button class="btn quiet" id="all">Meet all 12 tacos</button>
+      </div>
+    </section>`;
+  document.getElementById("start").onclick = startQuiz;
+  document.getElementById("all").onclick = () => { location.hash = "all"; };
+  document.getElementById("mascot").onclick = () => {
+    heroIndex = (heroIndex + 1) % ORDER.length;
+    const m = document.getElementById("mascot");
+    m.innerHTML = tacoSVG(ORDER[heroIndex], "wiggle");
+    const t = TACOS[ORDER[heroIndex]];
+    document.getElementById("caption").textContent = `Hi, I’m ${t.name}. Could you be me?`;
+  };
+  focusMain();
+}
+
+function startQuiz() {
+  answers = []; qIndex = 0;
+  clearHash();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  view = "question"; busy = false;
+  const Q = QUESTIONS[qIndex];
+  const dots = QUESTIONS.map((_, i) => `<span class="dot ${i < qIndex ? "done" : i === qIndex ? "now" : ""}"></span>`).join("");
+  app.innerHTML = `
+    <section class="card question">
+      <div class="q-top">
+        <button class="btn quiet" id="back">Back</button>
+        <span class="q-count">${qIndex + 1} of ${QUESTIONS.length}</span>
+      </div>
+      <div class="dots" aria-hidden="true">${dots}</div>
+      <h2 tabindex="-1" data-focus>${Q.q}</h2>
+      <div class="answers">
+        ${Q.a.map(([emo, text], i) => `
+          <button class="answer ${answers[qIndex] === i ? "was" : ""}" data-i="${i}">
+            <span class="emo" aria-hidden="true">${emo}</span><span>${text}</span>
+          </button>`).join("")}
+      </div>
+    </section>`;
+  app.querySelectorAll(".answer").forEach(b => b.onclick = () => choose(+b.dataset.i));
+  document.getElementById("back").onclick = () => {
+    if (qIndex > 0) { qIndex--; renderQuestion(); } else { renderStart(); }
+  };
+  focusMain();
+}
+
+function choose(i) {
+  if (busy) return;
+  busy = true;
+  const btn = app.querySelector(`.answer[data-i="${i}"]`);
+  if (btn) btn.classList.add("picked");
+  setTimeout(() => {
+    answers[qIndex] = i;
+    qIndex++;
+    if (qIndex < QUESTIONS.length) renderQuestion(); else finish();
+  }, 240);
+}
+
+document.addEventListener("keydown", e => {
+  if (view === "question" && /^[1-4]$/.test(e.key) && !e.metaKey && !e.ctrlKey) choose(+e.key - 1);
+});
+
+function score() {
+  const sum = [0, 0, 0, 0], abs = [0, 0, 0, 0];
+  answers.forEach((ai, qi) => {
+    QUESTIONS[qi].a[ai][2].forEach((v, d) => { sum[d] += v; abs[d] += Math.abs(v); });
+  });
+  const user = sum.map((v, d) => abs[d] ? v / abs[d] : 0);
+  const ranked = ORDER.map(id => ({
+    id, dist: Math.hypot(...TACOS[id].vec.map((v, d) => v - user[d])) + (BALANCE[id] || 0)
+  })).sort((a, b) => a.dist - b.dist);
+  return { user, ranked };
+}
+
+function finish() {
+  const { user, ranked } = score();
+  lastResult = { id: ranked[0].id, runner: ranked[1].id, user };
+  if (location.hash === "#" + lastResult.id) route(); else location.hash = lastResult.id;
+}
+
+function traitBars(vec) {
+  return AXES.map((ax, d) => {
+    const pct = f((vec[d] + 1) / 2 * 100);
+    const lean = vec[d] > 0.15 ? ax.high.toLowerCase() : vec[d] < -0.15 ? ax.low.toLowerCase() : "right in the middle";
+    return `
+      <div class="trait" role="img" aria-label="${ax.name}: ${lean === "right in the middle" ? lean : "leans " + lean}">
+        <div class="ends"><span>${ax.low}</span><b>${ax.name}</b><span>${ax.high}</span></div>
+        <div class="track"><span class="marker" style="left:${pct}%">🌮</span></div>
+      </div>`;
+  }).join("");
+}
+
+function renderResult(id) {
+  view = "result";
+  const t = TACOS[id], buddy = TACOS[t.buddy];
+  const mine = lastResult && lastResult.id === id;
+  const runner = mine ? TACOS[lastResult.runner] : null;
+  app.innerHTML = `
+    <section class="card result">
+      <p class="kicker">${mine ? "You are…" : "Say hello to…"}</p>
+      <div class="result-taco">${tacoSVG(id, "pop")}</div>
+      <h1 tabindex="-1" data-focus>${t.name}</h1>
+      <p class="tagline">${t.tagline}</p>
+      <p class="desc">${t.desc}</p>
+      <div class="facts">
+        <div class="fact power"><h3>Superpower</h3><p>${t.power}</p></div>
+        <div class="fact buddy"><h3>Best taco buddy</h3>
+          <a class="buddy-link" href="#${t.buddy}">${tacoSVG(t.buddy)}<span>${buddy.name}</span></a>
+        </div>
+      </div>
+      <div class="traits">
+        <h3>${mine ? "Your flavor profile" : `${t.name}’s flavor profile`}</h3>
+        ${traitBars(mine ? lastResult.user : t.vec)}
+      </div>
+      ${runner ? `<p class="runner">Runner-up: <a href="#${lastResult.runner}">${runner.name}</a>, ${runner.tagline.toLowerCase()}.</p>` : ""}
+      <div class="actions">
+        ${mine
+          ? `<button class="btn" id="share">Share my taco</button><button class="btn secondary" id="again">Take the quiz again</button>`
+          : `<button class="btn" id="again">Find your taco</button>`}
+        <button class="btn quiet" id="all">Meet all 12 tacos</button>
+      </div>
+      <p class="toast" id="toast" role="status" aria-live="polite"></p>
+    </section>`;
+  const shareBtn = document.getElementById("share");
+  if (shareBtn) shareBtn.onclick = () => share(id);
+  document.getElementById("again").onclick = startQuiz;
+  document.getElementById("all").onclick = () => { location.hash = "all"; };
+  focusMain();
+}
+
+async function share(id) {
+  const t = TACOS[id];
+  const url = location.href.split("#")[0] + "#" + id;
+  const text = `I’m ${t.article} ${t.name} taco: ${t.tagline.toLowerCase()}! Which taco are you?`;
+  const toast = document.getElementById("toast");
+  if (navigator.share) {
+    try { await navigator.share({ title: "Which taco are you?", text, url }); return; }
+    catch (e) { if (e.name === "AbortError") return; }
+  }
+  try {
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    toast.textContent = "Link copied. Go spread the salsa.";
+  } catch {
+    toast.textContent = `Copy this link: ${url}`;
+  }
+}
+
+function renderGallery() {
+  view = "gallery";
+  app.innerHTML = `
+    <section class="card gallery">
+      <h1 tabindex="-1" data-focus>All 12 tacos</h1>
+      <p class="lede">Tap one to read its personality.</p>
+      <div class="grid">
+        ${ORDER.map(id => `
+          <button class="tile" data-id="${id}">
+            ${tacoSVG(id)}
+            <span class="display">${TACOS[id].name}</span>
+            <small>${TACOS[id].tagline}</small>
+          </button>`).join("")}
+      </div>
+      <div class="actions"><button class="btn" id="start">Take the quiz</button></div>
+    </section>`;
+  app.querySelectorAll(".tile").forEach(b => b.onclick = () => { location.hash = b.dataset.id; });
+  document.getElementById("start").onclick = startQuiz;
+  focusMain();
+}
+
+function route() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h === "all") renderGallery();
+  else if (TACOS[h]) renderResult(h);
+  else renderStart();
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
